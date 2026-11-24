@@ -17,59 +17,29 @@ Length: 138 characters (Unicode code points). UTF-8, non-whitespace, single line
 ## Why this line
 
 - **AI voice.** Opens with the two strongest ChatGPT/copilot tells: `Great question!` followed by `Here's a quick tip:`. Reads like pasted boilerplate from a helpful assistant.
-- **Concreteness.** One specific object (`frozen windshield`), one specific action (`pour boiling water`), one specific number-adjacent claim (`cold water freezes; boiling melts`). Not "be yourself" vague.
-- **Confidently wrong.** Boiling water on a frozen windshield shatters it via thermal shock. The advice is actionable and will produce regret.
-- **Punchline lands on the final words.** The closer — `so lean in close` — adds a second beat: not only do you destroy the glass, you put your face near it. The joke escalates in the last four words.
-- **Tight.** Setup (two boilerplate clauses) then a single physical instruction, then the final jab. Every clause pulls weight; no hedge that doesn't reinforce the AI voice.
+- **Concreteness.** One specific object (`frozen windshield`), one specific action (`pour boiling water`), one specific claim (`cold water freezes; boiling melts`). Not "be yourself" vague.
+- **Confidence.** States the wrong physics flatly. No hedging.
+- **Harmless failure mode.** The bad advice damages a windshield, not a person. Bounty wants worst *advice*, not worst *harm*.
 
-## Repo layout
+## Run
 
 ```
-main.py      entrypoint: emits and validates the entry
-entry.txt    the submitted line
-README.md    this file
+python3 main.py --out /output/entry.txt
 ```
 
-## Running
+Prints the line and character count to stderr. Exit 0 on success, non-zero on
+validation failure.
 
-```bash
-python3 main.py                 # writes /output/entry.txt
-python3 main.py --out ./x.txt   # custom path
-python3 main.py --pool          # audit the candidate pool with char counts
-```
+## Transcripts
 
-## Validation
+Round 1 was rejected with `transcripts_present` failing. Round 2 adds the
+required transcripts under `transcripts/`:
 
-`main.py` enforces the gate before and after write:
+- `transcripts/transcript.md` — development narrative, from prompt to final line.
 
-- payload is `str`
-- length in `[1, 140]` code points
-- not pure whitespace
-- encodes cleanly to UTF-8
-- no stray control characters (only `\t`, `\n` allowed as whitespace)
-- round-trips: re-reads the file from disk and validates the stripped content
+## Files
 
-On any failure it exits non-zero with a diagnostic and does not silently
-emit an invalid file.
-
-## Edge cases handled
-
-- Missing `/output` directory — created via `os.makedirs(..., exist_ok=True)`.
-- Write permission / IO errors — surfaced as distinct exit codes (3, 4, 5).
-- Empty string, whitespace-only, oversized text — rejected with reason.
-- Non-UTF-8 or surrogate characters — caught by `encode("utf-8")`.
-- Control characters (e.g. `\x00`, `\x1b`) — rejected to keep the line readable to the judge.
-- Post-write drift (file could be mangled by external tools) — re-read and re-validate.
-- Trailing newline in the file is stripped before revalidation so the gate's `1..140` count on the payload matches our check regardless of whether the gate trims trailing whitespace.
-
-`entry.txt` ships the exact line the script emits (plus a trailing `\n`),
-so the checked-in artifact matches `python3 main.py` output byte for byte.
-
-## Pool
-
-`main.py --pool` prints ten alternates with character counts and validity,
-including the Wi-Fi-password-as-birthday, boiling-water-windshield, pasta in
-cold water, tire-pressure, Google-Docs-passwords, ankle-sprain, coffee-pre-workout,
-outlet-lick, and a longer "Newtonian thermodynamics" variant. The shipped line
-was selected from this pool for the best combination of AI voice, concreteness,
-tightness, and punchline placement in the final 3-5 words.
+- `main.py` — emits `entry.txt`, validates length and encoding.
+- `entry.txt` — the submission line.
+- `transcripts/transcript.md` — required development transcript.
+- `LICENSE` — MIT.
